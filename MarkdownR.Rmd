@@ -12,6 +12,39 @@ data <- read.csv(file_path)
 
 ```{r}
 # Assuming 'data' is your data frame
+
+data <- data %>% 
+  mutate(
+    current_running_clock = case_when(
+    out_of_bounds==1 & qtr==2 & half_seconds_remaining<120 ~ "Stopped",
+    out_of_bounds==1 & qtr==4 & half_seconds_remaining<300 ~ "Stopped",
+    play_type_nfl=="PASS" & complete_pass==0 ~ "Stopped",
+    play_type_nfl=="GAME_START" ~ "Stopped",
+    play_type_nfl=="KICK_OFF" ~ "Stopped",
+    play_type_nfl=="PUNT" ~ "Stopped",
+    play_type_nfl=="PENALTY" ~ "Stopped",  #This is more complicated but this is fine for now
+    play_type_nfl=="TIMEOUT" ~ "Stopped",
+    play_type_nfl=="INTERCEPTION" ~ "Stopped",
+    play_type_nfl=="FUMBLE_RECOVERED_BY_OPPONENT" ~ "Stopped",
+    TRUE ~ "Running"  
+    )
+  )
+
+data$running_clock <- "NA"
+data$prev_play_type <- "NA"
+
+for (i in 1:nrow(data)) {
+  if(data[i,301]=="GAME_START"){
+  data[i,393]="Stopped"
+  data[i,394]="None"
+  }
+  else{
+  data[i,393]=data[i-1,392]
+  data[i,394]=data[i-1,30]
+  }
+  
+} 
+
 nfl_plays <- subset(data, select = c("posteam",
                                      "posteam_type",
                                      "side_of_field",
@@ -43,7 +76,9 @@ nfl_plays <- subset(data, select = c("posteam",
                                      "punt_attempt",
                                      "offense_formation",
                                      "offense_personnel",
-                                     "route"
+                                     "route",
+                                     "running_clock",
+                                     "prev_play_type"
 ))
 ```
 
@@ -61,7 +96,40 @@ nfl_23 <- read.csv(nfl_23path)
 ```
 
 ```{r}
-nfl_23 <- subset(data, select = c("posteam",
+
+nfl_23 <- nfl_23 %>% 
+  mutate(
+    current_running_clock = case_when(
+    out_of_bounds==1 & qtr==2 & half_seconds_remaining<120 ~ "Stopped",
+    out_of_bounds==1 & qtr==4 & half_seconds_remaining<300 ~ "Stopped",
+    play_type_nfl=="PASS" & complete_pass==0 ~ "Stopped",
+    play_type_nfl=="GAME_START" ~ "Stopped",
+    play_type_nfl=="KICK_OFF" ~ "Stopped",
+    play_type_nfl=="PUNT" ~ "Stopped",
+    play_type_nfl=="PENALTY" ~ "Stopped",  #This is more complicated but this is fine for now
+    play_type_nfl=="TIMEOUT" ~ "Stopped",
+    play_type_nfl=="INTERCEPTION" ~ "Stopped",
+    play_type_nfl=="FUMBLE_RECOVERED_BY_OPPONENT" ~ "Stopped",
+    TRUE ~ "Running"  
+    )
+  )
+
+nfl_23$running_clock <- "NA"
+nfl_23$prev_play_type <- "NA"
+
+for (i in 1:nrow(nfl_23)) {
+  if(nfl_23[i,301]=="GAME_START"){
+  nfl_23[i,393]="Stopped"
+  nfl_23[i,394]="None"
+  }
+  else{
+  nfl_23[i,393]=nfl_23[i-1,392]
+  nfl_23[i,394]=nfl_23[i-1,30]
+  }
+  
+} 
+
+nfl_23 <- subset(nfl_23, select = c("posteam",
                                      "posteam_type",
                                      "side_of_field",
                                      "yardline_100",
@@ -92,7 +160,9 @@ nfl_23 <- subset(data, select = c("posteam",
                                      "punt_attempt",
                                      "offense_formation",
                                      "offense_personnel",
-                                     "route"
+                                     "route",
+                                     "running_clock",
+                                     "prev_play_type"
 ))
 ```
 
